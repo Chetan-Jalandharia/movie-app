@@ -1,7 +1,7 @@
 import { MovieDetails, SearchResponse } from "../types/movie";
 
 const API_KEY = import.meta.env.VITE_MOV_API_KEY;
-const BASE_URL = `http://www.omdbapi.com/?apikey=${API_KEY}`;
+const BASE_URL = `https://www.omdbapi.com/?apikey=${API_KEY}`;
 
 export const searchMovies = async (
   query: string,
