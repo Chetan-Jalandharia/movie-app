@@ -1,4 +1,4 @@
-import { useState, FormEvent, ChangeEvent } from 'react';
+import { useState, FormEvent, ChangeEvent, useEffect } from 'react';
 import styles from './SearchBar.module.css';
 
 interface SearchBarProps {
@@ -8,6 +8,11 @@ interface SearchBarProps {
 
 const SearchBar = ({ onSearch, initialQuery = '' }: SearchBarProps) => {
   const [query, setQuery] = useState(initialQuery);
+
+  // Update query if initialQuery changes
+  useEffect(() => {
+    setQuery(initialQuery);
+  }, [initialQuery]);
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();

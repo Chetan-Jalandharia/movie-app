@@ -1,17 +1,40 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useFavorites } from "../../hooks/useFavorites";
 import MovieGrid from "../../components/MovieGrid/MovieGrid";
+import Pagination from "../../components/Pagination/Pagination";
 import styles from "./FavoritesPage.module.css";
+
+const ITEMS_PER_PAGE = 10;
 
 const FavoritesPage = () => {
   const { favorites, removeFavorite } = useFavorites();
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const filteredFavorites = searchTerm
-    ? favorites.filter((movie) =>
-        movie.Title.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : favorites;
+  // Filter favorites based on search term
+  const filteredFavorites = useMemo(() => {
+    if (!searchTerm) return favorites;
+    return favorites.filter((movie) =>
+      movie.Title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [favorites, searchTerm]);
+
+  // Get current page favorites
+  const currentFavorites = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredFavorites.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredFavorites, currentPage]);
+
+  // Reset to page 1 when search term changes
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleToggleFavorite = (movie: any) => {
     removeFavorite(movie.imdbID);
@@ -29,7 +52,7 @@ const FavoritesPage = () => {
               type="text"
               placeholder="Search your favorites..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearchChange}
               className={styles.searchInput}
             />
           </div>
@@ -52,11 +75,22 @@ const FavoritesPage = () => {
                 <p>No movies found matching "{searchTerm}"</p>
               </div>
             ) : (
-              <MovieGrid
-                movies={filteredFavorites}
-                favorites={favorites.map((movie) => movie.imdbID)}
-                onToggleFavorite={handleToggleFavorite}
-              />
+              <>
+                <MovieGrid
+                  movies={currentFavorites}
+                  favorites={favorites.map((movie) => movie.imdbID)}
+                  onToggleFavorite={handleToggleFavorite}
+                />
+                
+                {filteredFavorites.length > ITEMS_PER_PAGE && (
+                  <Pagination 
+                    currentPage={currentPage}
+                    totalResults={filteredFavorites.length}
+                    resultsPerPage={ITEMS_PER_PAGE}
+                    onPageChange={handlePageChange}
+                  />
+                )}
+              </>
             )}
           </>
         )}
